@@ -1,0 +1,333 @@
+
+#!/bin/bash
+#Version 
+version="1.5.0"
+#Dependencies
+old_ifs="${IFS}"
+cache_dir="${HOME}/.cache/stream-cli"
+github_source="https://raw.githubusercontent.com/meteor314/stream-cli/master/stream-cli"
+export LC_ALL=en_US.utf8  
+
+
+
+#Out put text color
+#Reset
+Color_Off='\033[0m'       # Text Reset
+# Regular Colors
+Black='\033[0;30m'        # Black
+Red='\033[0;31m'          # Red
+Green='\033[0;32m'        # Green
+Yellow='\033[0;33m'       # Yellow
+Blue='\033[0;34m'         # Blue
+Purple='\033[0;35m'       # Purple
+Cyan='\033[0;36m'         # Cyan
+White='\033[0;37m'        # White
+
+rint_green() { # Print green text
+	echo -e "${Green}" "${*}"
+}
+no_color() { # Print green text
+	echo -e "${Color_Off}" "${*}"
+}
+print_red() { # Print green text
+	echo -e "${Red}" "${*}"
+}
+
+
+print_blue() { # Print green text
+	echo -e "${Blue}" "${*}"
+}
+print_green() { # Print green text
+	echo -e "${Green}" "${*}"
+}
+
+print_white() { # Print green text
+	echo -e "${White}" "${*}"
+}
+
+print_purple() { # Print green text
+	echo -e "${White}" "${*}"
+}
+
+
+print_list_item() { 
+	printf "${Blue}%s${Color_Off} ${Color_Off}%s${Color_Off}\n" "[${1}]" "${2}"
+}
+
+
+######################
+# Auxilary functions #
+######################
+
+show_help() {
+	while IFS= read -r line; do
+		printf "%s\n" "${line}"
+	done <<-EOF
+	
+    ny-cli ${version} ( github.com/meteor314/ny-cli ). Bash script for  torrent via the terminal
+	Usage:
+	  ny-cli [Options]
+	Options:
+	  -h, --help		Print this help page
+	  -V, --version		Print version number
+	  -u, --update		Fetch latest version from the Github repository
+	  -c, --cache-size	Print cache size (${cache_dir})
+	  -C, --clear-cache	Clear cache (${cache_dir})
+	EOF
+}
+error () {
+	# display an error message in red
+	print_red "$*" >&2
+}
+
+
+die () {
+	error "$*"
+	exit 1
+}
+
+check_dependencies () {
+	# checks if dependencies are present
+
+	for dep; do
+		if ! command -v "$dep" >/dev/null ; then
+			if [ "$dep" = "peerflix" ]; then
+				error "Program \"$dep\" not found. Please install it. Type \"scoop install $dep -g\" if you're using windows or Type \"sudo npm install $dep -g\""
+			else 
+				error "Program \"$dep\" not found. Please install it. \n Type \"scoop install $dep\" if you're using windows or Type apt-get install $dep"
+			fi
+
+			print_white "Exiting..."
+			die			
+		fi
+	done
+
+}
+check_dependencies
+
+prompt() { 
+	# Print text in green (${1}) and blue (${2}) 
+	printf "${Green}%s${Color_Off} ${Blue}%s${Color_Off}" "${1}" "${2}"
+
+	# Prompt user and save user input to the variable 'reply'
+	read -r reply 
+}
+
+
+#detec user os 
+
+detect_os() {
+	UNAME=$( command -v uname)
+
+	case $( "${UNAME}" | tr '[:upper:]' '[:lower:]') in
+	linux*)
+		printf 'linux\n'
+		;;
+	darwin*)
+		printf 'darwin\n'
+		;;
+	msys*|cygwin*|mingw*)
+		# or possible 'bash on windows'
+		printf 'windows\n'
+		;;
+	nt|win*)
+		printf 'windows\n'
+		;;
+	*)
+		printf 'unknown\n'
+		;;
+	esac
+}
+###################
+# Cache functions #
+###################
+
+create_cache_folder() {
+	# If cache_dir does not exist, create it
+	if [[ ! -d "${cache_dir}" ]]; then
+		mkdir --parents "${cache_dir}"
+	fi
+	cd ${cache_dir}
+
+}
+
+show_cache_size() {
+	
+	cache_size="$(du -sh "${cache_dir}" | awk '{print $1}')"
+
+	print_green "Cache size: ${cache_size} (${cache_dir})"
+}
+
+clear_cache() {
+	show_cache_size
+
+	prompt "Proceed with clearing the cache?" "[Y/N]: "
+
+	# Convert user input to lowercase
+	user_input="$(printf "%s" "${reply}" | tr "[:upper:]" "[:lower:]")"
+
+	if [[ "${user_input}" == "y" ]]; then
+		rm -r "${cache_dir:?}/"
+		print_green "Cache successfully cleared"
+	fi
+}
+
+################
+# Show Version #
+################
+
+show_version() {
+	print_green "Version: ${version}"
+}
+
+
+#################
+# Update Script #
+#################
+
+update_script() {
+	print_green "Fetching Github repository..."
+
+	# Get latest source code and compare it with this script
+	changes="$(curl --silent "${github_source}" | diff -u "${0}" -)"
+
+	if [[ -z "${changes}" ]]; then # If variable 'changes' is empty 
+		print_green "Script is up to date"
+	else
+		if printf '%s\n' "${changes}" | patch --silent "${0}" -; then
+			print_green "Script successfully updated"
+		else
+			print_red "ERROR: Something went wrong"
+		fi
+	fi
+}
+
+
+while [[ "${1}" ]]; do
+	case "${1}" in
+		-h|--help)
+			show_help
+			exit 0
+			;;
+		-V|--version)
+			show_version
+			exit 0
+			;;
+		-u|--update)
+			update_script
+			exit 0
+			;;
+		-c|--cache-size)
+			show_cache_size
+			exit 0
+			;;
+		-C|--clear-cache)
+			clear_cache
+			exit 0
+			;;
+		*)	
+			show_help
+			exit 1
+			;;
+	esac
+
+	shift
+done
+
+
+#################
+# Main Function #
+#################
+# Call 'reset_ifs' function when exiting script
+
+#check_dependencies ? // to do
+
+
+search_torrent () {
+	if [ -z "${torrent_title_input}"];then
+		prompt "Search torrent : "
+		torrent_title_input="${reply}"
+		torrent_title_input=${torrent_title_input// /%20} #replace space by +  for example detah note => death+note
+	fi
+
+
+
+	curl -o test.html "https://thepiratebay.party/search/${torrent_title_input}/1/99/0"
+	linkID=$(cat test.html | grep -Po "torrent\/[0-9]{6,8}\/[^\"]*" | fzf)
+
+	if [[ -z "$linkID" ]]; then # if torrent is unavailable
+		print_red "An error occured, could not find this link, please chose another torrent :-("
+		print_purple "the torrents are chosen according to their popularity/number of seeders. \n Please choose among the first torrents proposed for a better experience."		
+
+		prompt  "Do you want to continue ?" "[Y/n]: "
+		user_input="$(printf "%s" "${reply}" | tr "[:upper:]" "[:lower:]")"
+
+		#exemple of url :magnet:?xt=urn:btih:554491C7E605D11BF30324D5E4CA4509D0662A9E
+		if [[ "${user_input}" == "n" ]]; then
+			die
+		fi
+		torrent_title_input=
+		clear
+		main
+	fi
+
+
+	linkID="https://thepiratebay.party/${linkID}"
+
+	echo "Link find..."
+	echo "$linkID"
+
+	curl --globoff "$linkID" > test.html #--globoff : https://stackoverflow.com/questions/8333920/passing-a-url-with-brackets-to-curl, Passing a URL with brackets to curl
+
+	#exemple of url :magnet:?xt=urn:btih:554491C7E605D11BF30324D5E4CA4509D0662A9E
+
+	magnet=$(cat test.html | grep -Po 'magnet:\?xt=urn:btih:[A-F0-9]*')
+	echo "$magnet"
+	peerflix -l -k $magnet
+
+
+
+
+
+
+
+}
+
+
+
+input_controls() {
+
+	print_list_item "a" "Search another torrent"
+	print_list_item "q" "Exit"
+
+	printf "\n"
+	prompt "Enter input:"
+	user_input="$(printf "%s" "${reply}" | tr "[:upper:]" "[:lower:]")"
+
+	case "${user_input}" in
+		a)
+			torrent_title_input=
+			clear
+			main
+			return 1
+			;;
+		q)
+			clear
+			exit 0
+			;;
+	esac
+
+	clear
+	input_controls
+}
+
+check_dependencies "curl" "fzf" "patch" "mkdir" "cat" "sed" "grep" "git" "mpv"  "npm"  "peerflix"
+create_cache_folder
+
+main() {
+	search_torrent
+	input_controls
+	detect_os
+}
+
+main 
