@@ -57,7 +57,7 @@ print_yellow() { # Print green text
 
 
 print_list_item() { 
-	printf "${Blue}%s${Color_Off} ${Color_Off}%s${Color_Off}\n" "[${1}]" "${2}"
+	printf "${Yellow}%s${Color_Off} ${Color_Off}%s${Color_Off}\n" "[${1}]" "${2}"
 }
 
 
