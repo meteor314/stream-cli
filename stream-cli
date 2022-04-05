@@ -1,10 +1,12 @@
 
 #!/bin/bash
 #Version 
-version="1.5.0"
+version="1.6.0"
 #Dependencies
 old_ifs="${IFS}"
 cache_dir="${HOME}/.cache/stream-cli"
+download_dir="${HOME}/Downloads"
+logo="${HOME}/.cache/stream-cli/logo.jpg"
 github_source="https://raw.githubusercontent.com/meteor314/stream-cli/master/stream-cli"
 export LC_ALL=en_US.utf8  
 
@@ -23,7 +25,7 @@ Purple='\033[0;35m'       # Purple
 Cyan='\033[0;36m'         # Cyan
 White='\033[0;37m'        # White
 
-rint_green() { # Print green text
+print_green() { # Print green text
 	echo -e "${Green}" "${*}"
 }
 no_color() { # Print green text
@@ -49,6 +51,10 @@ print_purple() { # Print green text
 	echo -e "${White}" "${*}"
 }
 
+print_yellow() { # Print green text
+	echo -e "${Yellow}" "${*}"
+}
+
 
 print_list_item() { 
 	printf "${Blue}%s${Color_Off} ${Color_Off}%s${Color_Off}\n" "[${1}]" "${2}"
@@ -64,17 +70,29 @@ show_help() {
 		printf "%s\n" "${line}"
 	done <<-EOF
 	
-    ny-cli ${version} ( github.com/meteor314/ny-cli ). Bash script for  torrent via the terminal
+    stream-cli ${version} ( github.com/meteor314/stream-cli ). Bash script for watch torrent via the terminal
 	Usage:
-	  ny-cli [Options]
+	  stream-cli [Options]
 	Options:
 	  -h, --help		Print this help page
 	  -V, --version		Print version number
 	  -u, --update		Fetch latest version from the Github repository
 	  -c, --cache-size	Print cache size (${cache_dir})
 	  -C, --clear-cache	Clear cache (${cache_dir})
+	  If you chose to download  torrents, all download are in (${download_dir}/) folder, a notification will send after download.
+	  Please do not exit until this process is complete the application will automatically terminate :-)
+	  If you want to only watch torrent without download, torrent will be delete when you quit this application, or reboot your computer.
 	EOF
 }
+
+welcome_msg() {
+	while IFS= read -r line; do
+		printf "%s\n" "${line}"
+	done <<-EOF
+	Please try stream-cli -h for help and another options.
+	EOF
+}
+
 error () {
 	# display an error message in red
 	print_red "$*" >&2
@@ -92,7 +110,7 @@ check_dependencies () {
 	for dep; do
 		if ! command -v "$dep" >/dev/null ; then
 			if [ "$dep" = "peerflix" ]; then
-				error "Program \"$dep\" not found. Please install it. Type \"scoop install $dep -g\" if you're using windows or Type \"sudo npm install $dep -g\""
+				error "Program \"$dep\" not found. Please install it. Type \"scoop install $dep -g\" if you're using windows or Type \"npm install $dep -g\""
 			else 
 				error "Program \"$dep\" not found. Please install it. \n Type \"scoop install $dep\" if you're using windows or Type apt-get install $dep"
 			fi
@@ -121,20 +139,16 @@ detect_os() {
 
 	case $( "${UNAME}" | tr '[:upper:]' '[:lower:]') in
 	linux*)
-		printf 'linux\n'
+		print_blue 'Linux detected ^-^,  opening default file manager \n'
+		notify-send "stream-cli" \ "Download Finish, you can quit this application." -i "${logo}"
+		xdg-open "${download_dir}"
 		;;
 	darwin*)
 		printf 'darwin\n'
 		;;
-	msys*|cygwin*|mingw*)
-		# or possible 'bash on windows'
-		printf 'windows\n'
-		;;
-	nt|win*)
-		printf 'windows\n'
-		;;
-	*)
-		printf 'unknown\n'
+	msys*|cygwin*|nt|win*|mingw*)
+		print_blue 'Window detected ^-^,  opening default file manager \n'
+		start "${download_dir}"
 		;;
 	esac
 }
@@ -148,6 +162,11 @@ create_cache_folder() {
 		mkdir --parents "${cache_dir}"
 	fi
 	cd ${cache_dir}
+	#import logo if not exist
+	if [[ ! -f "${logo}" ]];then
+		welcome_msg
+		curl --silent -o logo.jpg "https://raw.githubusercontent.com/meteor314/stream-cli/master/src/logo.jpg"
+	fi
 
 }
 
@@ -240,7 +259,6 @@ done
 #################
 # Call 'reset_ifs' function when exiting script
 
-#check_dependencies ? // to do
 
 
 search_torrent () {
@@ -249,8 +267,6 @@ search_torrent () {
 		torrent_title_input="${reply}"
 		torrent_title_input=${torrent_title_input// /%20} #replace space by +  for example detah note => death+note
 	fi
-
-
 
 	curl -o test.html "https://thepiratebay.party/search/${torrent_title_input}/1/99/0"
 	linkID=$(cat test.html | grep -Po "torrent\/[0-9]{6,8}\/[^\"]*" | fzf)
@@ -283,21 +299,41 @@ search_torrent () {
 
 	magnet=$(cat test.html | grep -Po 'magnet:\?xt=urn:btih:[A-F0-9]*')
 	echo "$magnet"
-	peerflix -l -k $magnet
 
+	case "${user_input}" in
+		d)
+			download_torrent
+			return 1
+			;;
+		w)
+			watch_torrent
+			return 1
+			;;
+	esac
 
+}
+download_torrent() {
+	peerflix  $magnet --path "${download_dir}" --no-quit 
+	
+	detect_os
+	xdg-open "${download_dir}"
 
-
-
-
+}
+watch_torrent() {
+	peerflix  $magnet --list --mpv --subtitles --remove --not-on-top #   -r, --remove       remove files on exit
 
 }
 
+main() {
+	input_controls
+	search_torrent
+}
 
 
 input_controls() {
 
-	print_list_item "a" "Search another torrent"
+	print_list_item "w" "Watch films, animes"
+	print_list_item "d" "Download films, animes"
 	print_list_item "q" "Exit"
 
 	printf "\n"
@@ -305,13 +341,11 @@ input_controls() {
 	user_input="$(printf "%s" "${reply}" | tr "[:upper:]" "[:lower:]")"
 
 	case "${user_input}" in
-		a)
-			torrent_title_input=
-			clear
-			main
+		w|watch|d|download)
+			search_torrent
 			return 1
 			;;
-		q)
+		q|quit|exit)
 			clear
 			exit 0
 			;;
@@ -321,13 +355,6 @@ input_controls() {
 	input_controls
 }
 
-check_dependencies "curl" "fzf" "patch" "mkdir" "cat" "sed" "grep" "git" "mpv"  "npm"  "peerflix"
+check_dependencies "curl" "fzf" "patch" "mkdir" "cat" "sed" "grep"  "mpv"  "npm"  "peerflix"
 create_cache_folder
-
-main() {
-	search_torrent
-	input_controls
-	detect_os
-}
-
 main 

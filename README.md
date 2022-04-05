@@ -77,7 +77,7 @@ stream-cli
 ```
 - To update, 
 ```sh
-ny-cli --update
+stream-cli --update
 ```
 ## How to delete ?
 Remove path from local/bin
@@ -90,7 +90,7 @@ If you are using first time, you can get an error, plese retry with diffrent tor
 ## TO DO / WISH LIST
 
 - [✓] Compatibilty with windows.
-- [] Download torrent in a specific folder (with ny-cli -d)
+- [✓] Download torrent in a specific folder (with stream-cli -d)
 - [] Send notification after download ( notify-send(?) ) for W10, Mac & Linux.
 - [] Compatibility with mac os.
 - [] Fix bugs with git bash in W10
