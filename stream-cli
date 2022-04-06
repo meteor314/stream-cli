@@ -331,7 +331,7 @@ download_torrent() {
 			download_dir=${user_download_dir_folder}
 		fi
 	fi
-	peerflix  $magnet --path "${download_dir}" --no-quit 
+	peerflix  $magnet --path "${download_dir}" --no-quit --on-downloaded die
 	
 	detect_os
 
