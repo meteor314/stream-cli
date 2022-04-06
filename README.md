@@ -61,12 +61,28 @@ scoop install stream-cli
 npm install peerflix -g
 ```
 
-
-
-
-
 ## MAC OS
 //TO DO
+
+## Android
+Install [termux](https://termux.com/) and Install [mpv-android](https://github.com/mpv-android/mpv-android/releases)
+Don't forget to give termux file manager access. And just copy and paste this command:
+
+```sh
+pkg update
+pkg install nodejs
+npm install peerflix -g
+pkg install fzf
+pkg install git
+git clone https://github.com/meteor314/stream-cli && cd stream-cli
+cp stream-cli $PREFIX/bin/stream-cli
+echo 'am start --user 0 -a android.intent.action.VIEW -d "$2" -n is.xyz.mpv/.MPVActivity' > $PREFIX/bin/mpv
+chmod +x $PREFIX/bin/mpv
+```
+
+## MAC OS 
+//TO DO
+
 
 # How to use ?
 Juste write 
