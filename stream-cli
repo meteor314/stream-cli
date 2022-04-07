@@ -262,7 +262,7 @@ done
 
 
 search_torrent () {
-	if [ -z "${torrent_title_input}"];then
+	if [[ -z "${torrent_title_input}" ]];then
 		prompt "Search torrent : "
 		torrent_title_input="${reply}"
 		torrent_title_input=${torrent_title_input// /%20} #replace space by +  for example detah note => death+note
@@ -331,7 +331,8 @@ download_torrent() {
 			download_dir=${user_download_dir_folder}
 		fi
 	fi
-	peerflix  $magnet --path "${download_dir}" --no-quit --on-downloaded die	
+	print_white "Content of this torrent, press enter to continue. (All files will be download in ${download_dir}"
+	peerflix  $magnet --no-quit --list -a  --path "${download_dir}" 
 	detect_os
 
 }

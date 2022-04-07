@@ -1,5 +1,5 @@
 {
-    "version": "1.5.1",
+    "version": "1.8.0",
     "url": "https://raw.githubusercontent.com/meteor314/stream-cli/master/stream-cli",
     "extract_dir": "$env:USERPROFILE/.cache",
     "bin": "ny-cli"
