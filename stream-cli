@@ -75,7 +75,7 @@ show_help() {
 	  stream-cli [Options]
 	Options:
 	  -h, --help		Print this help page
-	  -V, --version		Print version number
+	  -v, --version		Print version number
 	  -u, --update		Fetch latest version from the Github repository
 	  -c, --cache-size	Print cache size (${cache_dir})
 	  -C, --clear-cache	Clear cache (${cache_dir})
@@ -228,7 +228,7 @@ while [[ "${1}" ]]; do
 			show_help
 			exit 0
 			;;
-		-V|--version)
+		-v|--version)
 			show_version
 			exit 0
 			;;
@@ -371,6 +371,6 @@ input_controls() {
 	input_controls
 }
 
-check_dependencies "curl" "fzf" "patch" "mkdir" "cat" "sed" "grep"  "mpv"  "npm"  "peerflix"
+check_dependencies "curl" "fzf" "patch" "mkdir" "cat" "sed" "grep"  "mpv" "peerflix"
 create_cache_folder
 main 
