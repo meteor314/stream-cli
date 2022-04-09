@@ -109,8 +109,8 @@ check_dependencies () {
 
 	for dep; do
 		if ! command -v "$dep" >/dev/null ; then
-			if [ "$dep" = "peerflix" ]; then
-				error "Program \"$dep\" not found. Please install it. Type \"scoop install $dep -g\" if you're using windows or Type \"npm install $dep -g\""
+			if [ "$dep" = "stream" ]; then
+				error "Program \"$dep\" not found. Please install it with this command \" npm install @meteor314/stream -g\" "
 			else 
 				error "Program \"$dep\" not found. Please install it. \n Type \"scoop install $dep\" if you're using windows or Type apt-get install $dep"
 			fi
@@ -139,12 +139,15 @@ detect_os() {
 
 	case $( "${UNAME}" | tr '[:upper:]' '[:lower:]') in
 	linux*)
-		print_blue 'Linux detected ^-^,  opening default file manager \n'
+		print_blue 'Linux detected ^-^  opening default file manager \n'
 		notify-send "stream-cli" \ "Download Finish, you can quit this application." -i "${logo}"
 		xdg-open "${download_dir}"
 		;;
 	darwin*)
-		printf 'darwin\n'
+		print_blue "MAC OS detected, opening folder ${download_dir}..."
+		osascript -e 'display notification "Download completed!" with title "stream-cli" -i "${logo}" '
+
+		open "${download_dir}"
 		;;
 	msys*|cygwin*|nt|win*|mingw*)
 		print_blue 'Window detected ^-^,  opening default file manager \n'
@@ -268,7 +271,7 @@ search_torrent () {
 		torrent_title_input=${torrent_title_input// /%20} #replace space by +  for example detah note => death+note
 	fi
 
-	curl -o test.html "https://thepiratebay.party/search/${torrent_title_input}/1/99/0"
+	curl --silent -o test.html "https://thepiratebay.party/search/${torrent_title_input}/1/99/0"
 	linkID=$(cat test.html | grep -Po "torrent\/[0-9]{6,8}\/[^\"]*" | fzf)
 
 	if [[ -z "$linkID" ]]; then # if torrent is unavailable
@@ -290,9 +293,9 @@ search_torrent () {
 
 	linkID="https://thepiratebay.party/${linkID}"
 
-	echo "Torrent find ${linkID}"
+	print_blue "Torrent find ${linkID}"
 
-	curl --globoff "$linkID" > test.html #--globoff : https://stackoverflow.com/questions/8333920/passing-a-url-with-brackets-to-curl, Passing a URL with brackets to curl
+	curl --silent --globoff "$linkID" > test.html #--globoff : https://stackoverflow.com/questions/8333920/passing-a-url-with-brackets-to-curl, Passing a URL with brackets to curl
 
 	#exemple of url :magnet:?xt=urn:btih:554491C7E605D11BF30324D5E4CA4509D0662A9E
 
@@ -330,13 +333,13 @@ download_torrent() {
 			download_dir=${user_download_dir_folder}
 		fi
 	fi
-	print_purple "Content of this torrent, press enter to continue. (All files will be download in ${download_dir})"
-	peerflix  $magnet  --list -a  --path "${download_dir}" 
+	print_blue "Content of this torrent, press enter to continue. (All files will be download in ${download_dir})"
+	stream  $magnet  --list -a  --path "${download_dir}" --exit #quit when installation is finshed.
 	detect_os
 
 }
 watch_torrent() {
-	peerflix  $magnet --list --mpv --subtitles --remove --not-on-top #   -r, --remove       remove files on exit
+	stream  $magnet --list --mpv --subtitles --remove --not-on-top #   -r, --remove       remove files on exit
 
 }
 
@@ -371,7 +374,7 @@ input_controls() {
 	input_controls
 }
 
-check_dependencies "curl" "fzf" "patch" "mkdir" "cat" "sed" "grep"  "mpv" "peerflix" # exit program if package is missing
+check_dependencies "curl" "fzf" "patch" "mkdir" "cat" "sed" "grep"  "mpv" "stream" # exit program if package is missing
 
 create_cache_folder #history of torrent and logo.
 

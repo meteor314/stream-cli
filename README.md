@@ -1,7 +1,7 @@
 <div align='center'>
 <h1>stream-cli <br /><img src="src/logo.jpg"  width="48px" height="48px"></h1>
 </div>
-<p align="center">A  tool which search magnet links and stream it with peerflix.The idea came while watching <a href='https://github.com/Bugswriter/notflix'>notflix</a> and the latter I found very buggy so I made mine based on the piratebay much more complete and functional.
+<p align="center">A  tool which search magnet links and stream it with stream.The idea came while watching <a href='https://github.com/Bugswriter/notflix'>notflix</a> and the latter I found very buggy so I made mine based on the piratebay much more complete and functional.
 </p>
 
 ### How does this work?
@@ -16,9 +16,9 @@ For scraping script use simple gnu utils like sed, awk, curl.
 
 You need <b>NPM</b>. You can follow this tutorial if you don't have node alreday installed.
 * [node](https://www.geeksforgeeks.org/installation-of-node-js-on-linux/) - Installation of Node.js on Linux 
-* [peerflix](https://github.com/mafintosh/peerflix) - A tool to stream torrent. 
+* [stream](https://github.com/meteor314/stream) - A tool to stream torrent. 
 ```sh 
-npm install peerflix -g
+npm install @meteor314/stream -g
 ```
 
 
@@ -58,7 +58,7 @@ cd stream-cli
 scoop install stream-cli
 ```
 ```sh
-npm install peerflix -g
+npm install @meteor314/stream -g
 ```
 
 ## MAC OS
@@ -71,7 +71,7 @@ Don't forget to give termux file manager access. And just copy and paste this co
 ```sh
 pkg update
 pkg install nodejs
-npm install peerflix -g
+npm install @meteor314/stream -g
 pkg install fzf
 pkg install git
 git clone https://github.com/meteor314/stream-cli && cd stream-cli
@@ -113,7 +113,7 @@ If you are using first time, you can get an error, plese retry with diffrent tor
 - [] Make a history of all torrent in ./.cache/history.ini
 - [] Detect files formats, for example, if it is a zip file or .exe just download it, don't try to open with mpv
 - [] add vlc player.
-- [] Create a custom node webserver based on webtorrent for a better compatibility.
+- [✓] Create a custom node webserver based on webtorrent for a better compatibility.
 
 
 ## License
