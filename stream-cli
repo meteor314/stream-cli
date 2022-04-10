@@ -162,7 +162,7 @@ detect_os() {
 create_cache_folder() {
 	# If cache_dir does not exist, create it
 	if [[ ! -d "${cache_dir}" ]]; then
-		mkdir --parents "${cache_dir}"
+		mkdir -p "${cache_dir}"
 	fi
 	cd ${cache_dir}
 	#import logo if not exist
@@ -334,12 +334,12 @@ download_torrent() {
 		fi
 	fi
 	print_purple "Content of this torrent, press enter to continue. (All files will be download in ${download_dir})"
-	stream  "$magnet"  --list -a  --path "${download_dir}" --exit #quit when installation is finshed.
+	stream  "$magnet" -a  --no-quit --path "${download_dir}" --connections 1000 --exit #quit when installation is finshed.
 	detect_os
 
 }
 watch_torrent() {
-	stream  "$magnet" --list --mpv --subtitles --remove --not-on-top #   -r, --remove       remove files on exit
+	stream  "$magnet" --list --mpv --subtitles --remove --not-on-top --connections 1000 -- --fullscreen #   -r, --remove       remove files on exit
 
 }
 
