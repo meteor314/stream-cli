@@ -333,7 +333,6 @@ download_torrent() {
 			download_dir=${user_download_dir_folder}
 		fi
 	fi
-	print_purple "Content of this torrent, press enter to continue. (All files will be download in ${download_dir})"
 	stream  "$magnet" -a  --no-quit --path "${download_dir}" --connections 1000 --exit #quit when installation is finshed.
 	detect_os
 
