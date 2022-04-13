@@ -5,6 +5,7 @@ version="1.7.1"
 #Dependencies
 old_ifs="${IFS}"
 cache_dir="${HOME}/.cache/stream-cli"
+logFile="history.ini"
 download_dir="${HOME}/Downloads"
 logo="${HOME}/.cache/stream-cli/logo.jpg"
 github_source="https://raw.githubusercontent.com/meteor314/stream-cli/master/stream-cli"
@@ -170,6 +171,10 @@ create_cache_folder() {
 		welcome_msg
 		curl --silent -o logo.jpg "https://raw.githubusercontent.com/meteor314/stream-cli/master/src/logo.jpg"
 	fi
+	#import logo if not exist
+	if [[ ! -f "${logfile}" ]];then
+		touch history.ini
+	fi
 
 }
 
@@ -272,7 +277,7 @@ search_torrent () {
 	fi
 
 	curl --silent -o test.html "https://thepiratebay.party/search/${torrent_title_input}/1/99/0"
-	linkID=$(cat test.html | grep -Po "torrent\/[0-9]{6,8}\/[^\"]*" | fzf)
+	linkID=$(cat test.html | grep -Eo "torrent\/[0-9]{6,8}\/[^\"]*" | fzf)
 
 	if [[ -z "$linkID" ]]; then # if torrent is unavailable
 		print_red "An error occured, could not find this link, please chose another torrent :-("
@@ -299,7 +304,11 @@ search_torrent () {
 
 	#exemple of url :magnet:?xt=urn:btih:554491C7E605D11BF30324D5E4CA4509D0662A9E
 
-	magnet=$(cat test.html | grep -Po 'magnet:\?xt=urn:btih:[A-F0-9]*')
+	magnet=$(cat test.html | grep -Eo 'magnet:\?xt=urn:btih:[A-F0-9]*')
+
+	if ! grep  -q $magnet $logFile;	then
+		echo "${linkId, ${download_dir}, $magnet" >> $logFile
+	fi
 
 
 	case "${user_input}" in
@@ -316,6 +325,31 @@ search_torrent () {
 }
 
 
+download_from_history() {
+
+	test=$(cat  $logFile  | fzf) 
+	if [[ -z $test ]];then
+		print_red "History is empty"
+		print_white "Exiting ..."
+		sleep 1
+		die
+	fi
+	download_dir=$(echo "$test" | awk -F ',' '{print $2}' | sed 's/ //g')   
+	magnet=$(echo "$test" | awk -F ',' '{print $3}' | sed 's/ //g') #trim
+
+
+	echo "Dwonload dir is:$download_dir"
+	echo "Magnet is : $magnet"		
+	if [[ ! -d $download_dir ]]; then
+		print_red "Error occured,folder:${download_dir} not found, error 404 :\ "
+		die
+	fi
+	print_purple "Content of this torrent, all files will download in $download_dir, press enter to continue"
+	stream   "$magnet" --path "${download_dir}"  -a --no-quit --list --exit   # to do fix bugs, fs => fullscreen
+	detect_os	
+
+
+}
 download_torrent() {
 
 	prompt "Do you want to download in a specfic folder ? (Default folder is ${download_dir}) [y/N]:"
@@ -353,6 +387,7 @@ input_controls() {
 
 	print_list_item "w" "Watch films, animes"
 	print_list_item "d" "Download films, animes (recommanded)"
+	print_list_item "h" "Continue unfinshed download torrent"
 	print_list_item "q" "Exit"
 
 	printf "\n"
@@ -364,6 +399,12 @@ input_controls() {
 			search_torrent
 			return 1
 			;;
+
+		h|history)
+			download_from_history
+			return 1
+			;;
+
 		q|quit|exit)
 			clear
 			exit 0
