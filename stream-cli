@@ -306,9 +306,6 @@ search_torrent () {
 
 	magnet=$(cat test.html | grep -Eo "magnet:(.)[a-zA-Z0-9./?=_%:-]*")	
 
-	if ! grep  -q $linkID $logFile;	then
-		echo "${linkID},${download_dir},${magnet}" >> $logFile #bugs need to fix
-	fi	
 
 	case "${user_input}" in
 		d)
@@ -368,6 +365,14 @@ download_torrent() {
 			download_dir=${user_download_dir_folder}
 		fi
 	fi
+
+
+	# add title, download_dir and torrent link in log file
+	if ! grep  -q $magnet $logFile;	then
+		echo "download dir is : $download_dir"
+		echo "${linkID}, ${download_dir}, $magnet" >> $logFile
+	fi
+
 	print_purple "Content of this torrent, all files will download in $download_dir, press enter to continue"
 	stream   "$magnet" --path "${download_dir}"  -a --list --no-quit --exit -- --fs  # to do fix bugs, fs => fullscreen
 	detect_os
