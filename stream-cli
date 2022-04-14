@@ -151,6 +151,8 @@ detect_os() {
 		open "${download_dir}"
 		;;
 	msys*|cygwin*|nt|win*|mingw*)
+		
+		download_dir=$(echo ${download_dir} | sed 's/\\\\/\\/g')
 		print_blue 'Window detected ^-^,  opening default file manager \n'
 		start "${download_dir}"
 		;;
