@@ -1,7 +1,7 @@
 
 #!/bin/bash
 #Version 
-version="1.8.1"
+version="1.8.2"
 #Dependencies
 old_ifs="${IFS}"
 cache_dir="${HOME}/.cache/stream-cli"
@@ -21,9 +21,8 @@ Black='\033[0;30m'        # Black
 Red='\033[0;31m'          # Red
 Green='\033[0;32m'        # Green
 Yellow='\033[0;33m'       # Yellow
-Blue='\033[0;34m'         # Blue
+Blue='\033[0;36m'         # Blue
 Purple='\033[0;35m'       # Purple
-Cyan='\033[0;36m'         # Cyan
 White='\033[0;37m'        # White
 
 print_green() { # Print green text
@@ -90,6 +89,7 @@ welcome_msg() {
 	while IFS= read -r line; do
 		printf "%s\n" "${line}"
 	done <<-EOF
+	It seems like you are using this program for the first time
 	Please try stream-cli -h for help and another options.
 	EOF
 }
@@ -288,7 +288,7 @@ search_torrent () {
 		prompt  "Do you want to continue ?" "[Y/n]: "
 		user_input="$(printf "%s" "${reply}" | tr "[:upper:]" "[:lower:]")"
 
-		#exemple of url :magnet:?xt=urn:btih:554491C7E605D11BF30324D5E4CA4509D0662A9E
+		# exemple of url :magnet:?xt=urn:btih:554491C7E605D11BF30324D5E4CA4509D0662A9E
 		if [[ "${user_input}" == "n" ]]; then
 			die
 		fi
@@ -368,11 +368,11 @@ download_torrent() {
 	fi
 
 
-	# add title, download_dir and torrent link in log file
-	if ! grep  -q $magnet $logFile;	then
-		echo "download dir is : $download_dir"
-		echo "${linkID},${download_dir}, $magnet" >> $logFile
+	title=$(echo "$linkID" | sed -E 's/^(.*?)torrent\/[0-9]{5,9}//g') # remove all patern before torrent/522112121" => format title
 
+	# add title, download_dir and torrent link in log file
+	if ! grep  -q $magnet $logFile; then	
+		echo "${title},${download_dir},${magnet}" >> ${logFile}
 	fi
 
 	print_purple "Content of this torrent, all files will download in $download_dir, press enter to continue"
@@ -382,6 +382,26 @@ download_torrent() {
 }
 watch_torrent() {
 	stream  "$magnet" --list --mpv --subtitles --remove --not-on-top --connections 1000 -- --fullscreen #   -r, --remove       remove files on exit
+
+}
+
+
+##################
+# export history #
+##################
+
+#export histroy and rename as csv file
+
+export_history() {
+	if [[ ! -f ${cache_dir}/$logFile ]];then
+		print_red "History is empty"
+		print_white "Exiting ..."
+		sleep 1
+		die
+	fi
+	print_purple "Exporting database  : ${cache_dir}/$logFile to ${HOME}/Desktop/stream-cli-history-torrent.csv"
+	cp ${cache_dir}/$logFile ${HOME}/Desktop/stream-cli-history-torrent.csv
+	die
 
 }
 
@@ -396,6 +416,7 @@ input_controls() {
 	print_list_item "w" "Watch films, animes"
 	print_list_item "d" "Download films, animes (recommanded)"
 	print_list_item "h" "Continue unfinshed download torrent"
+	print_list_item "e" "Export history as csv file"
 	print_list_item "q" "Exit"
 
 	printf "\n"
@@ -412,6 +433,11 @@ input_controls() {
 			download_from_history
 			return 1
 			;;
+		
+		e|export)
+			export_history
+			exit 0
+			;; 
 
 		q|quit|exit)
 			clear
