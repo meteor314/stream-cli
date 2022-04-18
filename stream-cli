@@ -307,6 +307,7 @@ search_torrent () {
 	#exemple of url :magnet:?xt=urn:btih:554491C7E605D11BF30324D5E4CA4509D0662A9E
 
 	magnet=$(cat test.html | grep -Eo "magnet:(.)[a-zA-Z0-9./?=_%:-]*")	
+	print_white  "Magnet link find $magnet \n title  : ${title}"
 
 
 	case "${user_input}" in
