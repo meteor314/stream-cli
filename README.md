@@ -1,3 +1,5 @@
+# This program is depreacted, please use ny-cli with some add functionality and many bugs fixes </h1>
+
 <div align='center'>
 <h1>stream-cli <br /><img src="src/logo.jpg"  width="48px" height="48px"></h1>
 </div>
